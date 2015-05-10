@@ -26,6 +26,8 @@ module Kaminari
     config_accessor :page_method_name
     config_accessor :max_pages
     config_accessor :params_on_first_page
+    config_accessor :slide_prev_step
+    config_accessor :slide_next_step
 
     def param_name
       config.param_name.respond_to?(:call) ? config.param_name.call : config.param_name
@@ -49,5 +51,7 @@ module Kaminari
     config.param_name = :page
     config.max_pages = nil
     config.params_on_first_page = false
+    config.slide_prev_step = 1
+    config.slide_next_step = 1
   end
 end

@@ -124,5 +124,12 @@ module Kaminari
     # Non-link tag that stands for skipped pages...
     class Gap < Tag
     end
+
+    class SlideToNextPagination < Tag
+    end
+
+    class SlideToPrevPagination < Tag
+    end
+
   end
 end

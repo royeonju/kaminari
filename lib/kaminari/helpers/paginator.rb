@@ -23,15 +23,25 @@ module Kaminari
           h[:right] = options.delete(:right) || Kaminari.config.right
           h[:right] = outer_window if h[:right] == 0
         end
+
+        ### TODO Get slide step from given options and set @slide_options  ###
+        @slide_options = {}.tap do |h|
+            h[:slide_next_step] = options.delete(:slide_next_step) || Kaminari.config.slide_next_step 
+            h[:slide_prev_step] = options.delete(:slide_prev_step) || Kaminari.config.slide_prev_step
+        end
+        ######################################################################
+
         @template, @options = template, options
         @theme = @options[:theme]
         @views_prefix = @options[:views_prefix]
         @window_options.merge! @options
+        @window_options.merge! @slide_options
         @window_options[:current_page] = @options[:current_page] = PageProxy.new(@window_options, @options[:current_page], nil)
 
         @last = nil
         # initialize the output_buffer for Context
         @output_buffer = ActionView::OutputBuffer.new
+
       end
 
       # render given block as a view template
@@ -64,11 +74,45 @@ module Kaminari
       end
       private :relevant_pages
 
+      def each_left_slided_page
+        return to_enum(:each_left_slided_page) unless block_given?
+
+        left_slided_pages(@window_options).each do |page|
+          yield PageProxy.new(@window_options, page, @last)
+        end 
+      end
+
+      def left_slided_pages(window_options)
+        current_leftmost_page = options[:current_page] - options[:window]
+        current_rightmost_page = options[:current_page] + options[:window]
+        next_leftmost_page = current_leftmost_page - options[:slide_prev_step]
+        next_rightmost_page = current_rightmost_page - options[:slide_prev_step]
+        next_leftmost_page.upto(next_rightmost_page).to_a.sort.reject { |x| (x < 1) || (x > options[:total_pages]) }
+      end
+      private :left_slided_pages
+
+      def each_right_slided_page
+        return to_enum(:each_right_slided_page) unless block_given?
+
+        right_slided_pages(@window_options).each do |page|
+          yield PageProxy.new(@window_options, page, @last)
+        end 
+      end
+
+      def right_slided_pages(options)
+        current_leftmost_page = options[:current_page] - options[:window]
+        current_rightmost_page = options[:current_page] + options[:window]
+        next_leftmost_page = current_leftmost_page + options[:slide_next_step]
+        next_rightmost_page = current_rightmost_page + options[:slide_next_step]
+        next_leftmost_page.upto(next_rightmost_page).to_a.sort.reject { |x| (x < 1) || (x > options[:total_pages]) }
+      end
+      private :right_slided_pages
+
       def page_tag(page)
         @last = Page.new @template, @options.merge(:page => page)
       end
 
-      %w[first_page prev_page next_page last_page gap].each do |tag|
+      %w[first_page prev_page next_page last_page gap slide_to_prev_pagination slide_to_next_pagination].each do |tag|
         eval <<-DEF
           def #{tag}_tag
             @last = #{tag.classify}.new @template, @options

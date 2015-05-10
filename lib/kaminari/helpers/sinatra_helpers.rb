@@ -68,6 +68,9 @@ module Kaminari::Helpers
       def params
         @current_params
       end
+
+      def slided_page
+      end
     end
 
     module HelperMethods
@@ -80,10 +83,13 @@ module Kaminari::Helpers
       # * <tt>:outer_window</tt> - The "outer window" size (0 by default).
       # * <tt>:left</tt> - The "left outer window" size (0 by default).
       # * <tt>:right</tt> - The "right outer window" size (0 by default).
+      # * <tt>:slide_prev_step</tt> - left step size for slider (1 by default).
+      # * <tt>:slide_next_step</tt> - right step size for slider (1 by default).r
       # * <tt>:params</tt> - url_for parameters for the links (:id, :locale, etc.)
       # * <tt>:param_name</tt> - parameter name for page number in the links (:page by default)
       # * <tt>:remote</tt> - Ajax? (false by default)
       # * <tt>:ANY_OTHER_VALUES</tt> - Any other hash key & values would be directly passed into each tag as :locals value.
+
       def paginate(scope, options = {}, &block)
         current_path = env['PATH_INFO'] rescue nil
         current_params = Rack::Utils.parse_query(env['QUERY_STRING']).symbolize_keys rescue {}
